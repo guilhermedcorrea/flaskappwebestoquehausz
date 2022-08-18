@@ -1,22 +1,34 @@
-
-import os
-import pytesseract
-from pdf2image import convert_from_path, convert_from_bytes
-import cv2
-import re
-from datetime import datetime
 from itertools import zip_longest
-import itertools
+import os
+import sys
+import pytesseract
+from PIL import Image
+from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError)
+import cv2
+import numpy as np
+import re
 import pandas as pd
+from datetime import datetime
+import pytesseract
+from config import UPLOADFOLDER
+import os
+import csv
+from flask import current_app
 
 
 
 class Itagres:
-    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
-    def __init__(self):
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
+    def __init__(self, path):
         self.config = '--psm 4  -c preserve_interword_spaces=1 tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.[]|,,.~â ÃÂç'
-        self.tesseract_language = "eng"
+        self.tesseract_language = "por"
         self.lista_produtos = []
+        self.path = path
         self.imagem =  r'C:\\Users\\Guilherme\\Pictures\\readerpdf\\imagens\\'
         self.pdffile =  r'C:\\Users\\Guilherme\\Pictures\\readerpdf\\pdffiles\\Itagres 17.08.pdf'
         self.dataatual = str(datetime.today().strftime('%Y-%m-%d %H:%M'))

@@ -1,26 +1,34 @@
+from itertools import zip_longest
 import os
+import sys
 import pytesseract
+from PIL import Image
 from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError)
 import cv2
+import numpy as np
 import re
 import pandas as pd
 from datetime import datetime
 import pytesseract
-import csv
+from config import UPLOADFOLDER
 import os
-from itertools import zip_longest
-from itertools import groupby, count
-from collections import Counter
+import csv
+from flask import current_app
 
 
 #https://stackoverflow.com/questions/57567297/sum-of-key-values-in-list-of-dictionary-grouped-by-particular-key
 class Elizabeth:
-    
-    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
-    def __init__(self):
-        self.config = "tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,"
+    def __init__(self, path):
+        self.config = '--psm 4  -c preserve_interword_spaces=1 tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.[]|,,.~â ÃÂç'
         self.tesseract_language = "por"
+        self.lista_produtos = []
+        self.path = path
         self.lista_produtos = []
         self.path = 'C:\\Users\\Guilherme\\Pictures\\readerpdf\\pdffiles\\elizabeth.pdf'
         self.imagem = 'C:\\Users\\Guilherme\\Pictures\\readerpdf\\imagens\\'

@@ -19,153 +19,76 @@ import os
 import csv
 from flask import current_app
 
-
-
 class Lexxa:
     pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
     def __init__(self,path):
-        self.config= '--psm 4  -c preserve_interword_spaces=1 tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.[]|,,.~â ÃÂç'
+        self.config = '--psm 4  -c preserve_interword_spaces=1 tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.[]|,,.~â ÃÂç'
         self.tesseract_language = "por"
         self.lista_produtos = []
         self.path = path
-        self.imagem = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads','imagens')
-        self.pdffile = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads')
+        self.imagem =  r'C:\\Users\\Guilherme\\Pictures\\readerpdf\\imagens\\'
+        self.pdffile =  r'C:\\Users\\Guilherme\\Pictures\\readerpdf\\pdffiles\\lexxa.pdf'
         self.dataatual = str(datetime.today().strftime('%Y-%m-%d %H:%M'))
-        self.idmarca = '36'
-        self.save_itens = os.path.join(UPLOADFOLDER, 'flaskapprefatorado','app','admin','files'
-        ,'adminuploads')
+        self.idmarca = '21'
+        self.listadicts = []
 
     def converter_imgpdf(self):
-     
-        images = convert_from_bytes(open(self.path, 'rb').read())
 
+        images = convert_from_path(self.pdffile, 200, poppler_path=r'C:\\Users\\Guilherme\\Pictures\\readerpdf\\poppler-0.68.0\\bin')
         for i in range(len(images)):
-            images[i].save(self.imagem+'/lexxa'+ str(i) +'.jpg', 'JPEG')
-            print(images[i])
-         
-
-    def ajuste_referencias(self, listas):
-        lista_dicts = []
-        for lista in listas:
-            valor = str(lista).split(" ")
-            remov_espacos = list(filter(lambda k: len(k.strip()) > 0, valor))
-            
-            cont = len(remov_espacos)
-            
-            if cont > 7:
-                dict_values = {}
-                try:
-                    dict_values['SKU'] = remov_espacos[0].strip()
-                except:
-                    dict_values['SKU'] = 'valornaoencontrado'
-                try:
-                    saldo = str(remov_espacos[-1]).strip()
-                    dict_values['SALDO'] = float(saldo)
-                except:
-                    dict_values['SALDO'] = float(0)
-                try:
-                    dict_values['DATA'] = self.dataatual
-                except:
-                    dict_values['DATA'] = 'valornaoencontrado'
-
-                try:
-                    dict_values['PRAZO'] = 'Prazo Definido pelo fabricante'
-                except:
-                    dict_values['PRAZO'] = 'Prazo Definido pelo fabricante'
-
-                try:
-                    dict_values['IDMARCA'] = self.idmarca
-                except:
-                    print("Error")
-            
-                dict_values['MARCA'] = str('Lexxa')
-
-                lista_dicts.append(dict_values)
-
-        return lista_dicts
+            images[i].save(self.imagem+r'\lexxa'+ str(i) +'.jpg', 'JPEG')
+    
+    
+    def search_files(self):
+        imagem = [x for x in os.listdir(self.imagem) if 'lexxa']
+        return imagem
+    
 
     def reader_imagem(self):
-        lista_dicts_saldos = []
-        imgs = os.path.join(UPLOADFOLDER,'flaskapprefatorado','uploads_files','imagens')
-        print(imgs)
     
-        for im in imgs:
-            if 'lexxa' in im:
-                img = cv2.imread(os.path.join(self.imagem,im))
-                print(os.path.join(self.imagem,im))
-                #imagemgray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) #Convertendo para rgb
-                imagemgray = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) #Convertendo para rgb
-                texto = pytesseract.image_to_string(imagemgray, lang= self.tesseract_language,config=self.config)
-                valor = texto.split("\n")
-                print(valor)
-                dicts = self.ajuste_referencias(valor)
-                for dict in dicts:
-                    lista_dicts_saldos.append(dict)
+        imagens = self.search_files()
+  
+        try:
+            for imagem in imagens:
+                if 'lexxa' in imagem:
+                    file = cv2.imread(os.path.join(self.imagem,imagem))
+                    
+                    imagemgray = cv2.cvtColor(file, cv2.COLOR_BGR2RGB)
 
-        return lista_dicts_saldos
-       
-    def create_dataframe(self):
+                    texto = pytesseract.image_to_string(imagemgray, lang= self.tesseract_language,config=self.config)
+                    valores = texto.split('\n')
+                    for valor in valores:
+                        dict_items = {}
+                        valor = valor.strip().split()
+                        cont = len(valor)
+                        if cont >1:
+                            try:
+                                SKU = valor[0]
+                                SKU = str(SKU).strip()
+                                dict_items['SKU'] = SKU
+                            except:
+                                dict_items['SKU'] = 'notfound'
+
+                            try:
+                                saldo = str(valor[-1]).strip()
+                                num = float(saldo)
+                                dict_items['SALDO'] = num
+                            except:
+                                dict_items['SALDO'] = 0
+
+                            self.lista_produtos.append(dict_items)
         
-        listas = self.reader_imagem()
-        data = pd.DataFrame(listas)
-        try:
-            data['SKU'].fillna(0, inplace=True)
         except:
             pass
-        try:
-            data['SALDO'].fillna(0, inplace=True)
-        except:
-            pass
-        try:
-            data['SALDO'] = data['SALDO'].astype(float)
-        except:
-            pass
-        data.drop(data.loc[data['SALDO']=='valornaoencontrado'].index, inplace=True)
-        data = data.sort_values('SALDO', ascending=False).drop_duplicates('SKU').sort_index()
+               
+        return self.lista_produtos  
+   
+       
 
-        #data.to_excel("D:\\PROJETOS_DEV\\dev_testes\\0907\\flask_app\uploads_files\\excel_files\\lexxa0606.xlsx")
-
-        jsons = data.to_dict('records')
-        print(jsons)
-        return jsons
+viscardi = Lexxa()
+viscardi.reader_imagem()
 
 
-    def dict_writer(self):
-        try:
-            save_file = self.save_itens
-            filename = 'Elizabeth' + '_' + self.dataatual .split()[0] + '.csv'
-            with open(save_file+filename, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=self.lista_produtos[1])
-                writer.writeheader()
-                for row in self.lista_produtos:
-                    writer.writerow(row)
-        except:
-            print("erro excel log elizabeth")
 
 
-    @staticmethod
-    def delete_upload_files():
-        try:
-            files = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads')
-            path = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads')
-            for file in files:
-                if '.pdf' in file or '.xlsx' in file or '.png' in file or '.jpg' in file:
-                    remov = os.path.join(path, file)
-                    print(remov)
-                    os.remove(remov)
-        except:
-            print("erro deletar files Elizabeth")
 
-
-    @staticmethod
-    def delete_image_files():
-        try:
-            images = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads','imagens')
-            path2 = os.path.join(UPLOADFOLDER,'flaskapprefatorado','app','uploads','imagens')
-            for file in images:
-                if '.pdf' in file or '.xlsx' in file or '.png' in file or '.jpg' in file:
-                    remov = os.path.join(path2, file)
-                    print(remov)
-                    os.remove(remov)
-        except:
-            print("erro deletar files elizabeth")
