@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+
+{% block conteudo %}
+
+          <div class="table-responsive">
+            <table class="table table-striped mg-b-0">
+              <thead>
+                <tr>
+                  <th>Marca</th>
+                  <th>SKU</th>
+                  <th>NomeProduto</th>
+                  <th>Quantidade</th>
+                  <th>PrazoEstoqueFabrica</th>
+                  <th>PrazoFaturamento</th>
+                  <th>PrazoOperacional</th>
+                  <th>PrazoProducao</th>
+                  <th>PrazoTotal</th>
+                  <th>DATAATUALIZADO</th>
+                  <th>StatusBitAtivo</th>
+                  <th>StatusAtualizado</th>
+                
+                </tr>
+              </thead>
+              <tbody>
+                {% for produto in produtos %}
+          
+
+                <tr>
+
+                  <th scope="row">{{produto['Marca']}}</th>
+                  <td>{{produto['SKU']}}</td>
+                  <td>{{produto['NomeProduto']}}</td>
+                  <td>{{produto['Quantidade']}}</td>
+                  <td>{{produto['PrazoEstoqueFabrica']}}</td>
+                  <td>{{produto['PrazoFaturamento']}}</td>
+                  <td>{{produto['PrazoOperacional']}}</td>
+                  <td>{{produto['PrazoProducao']}}</td>
+                  <td>{{produto['PrazoTotal']}}</td>
+                  <td>{{produto['DATAATUALIZADO']}}</td>
+                  <td>{{produto['StatusBitAtivo']}}</td>
+                  <td>{{produto['StatusAtualizado']}}</td>
+
+
+                </tr>
+             
+                {%endfor%}
+            
+               
+              </tbody>
+            </table>
+          </div><!-- bd -->
+
+          <hr class="mg-y-30">
+
+
+
+{% endblock conteudo %}

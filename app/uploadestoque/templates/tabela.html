@@ -1,0 +1,35 @@
+
+          <div class="table-responsive">
+            <table class="table table-striped mg-b-0">
+              <thead>
+                <tr>
+                  <th>IDMARCA</th>
+                  <th>Marca</th>
+                  <th>Item</th>
+                  <th>SKU</th>
+                  <th>Saldo</th>
+                  <th>ATUALIZADO</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+          
+
+                <tr>
+
+                {% for produto in produtos %}
+                  <td>{{produto['SKU']}}</td>
+             
+
+
+                </tr>
+        
+                {%endfor%}
+
+              </tbody>
+            </table>
+          </div><!-- bd -->
+
+          <hr class="mg-y-30">
+
+
