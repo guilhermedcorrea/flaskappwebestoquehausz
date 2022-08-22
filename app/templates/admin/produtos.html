@@ -1,0 +1,134 @@
+{% extends "base2.html" %}
+
+{% block content %}
+    <div class="container">
+            
+        <div class="row">
+            <div class="col-md-6">
+                <label>Concorrentes</label>
+                <select name="name_seller" data-live-search="true" id="name_seller" class="form-control" title="Select Car Brand"> 
+                {% for row in sellers %}
+                <option value="{{row.IdSeller}}">{{row.nomeseller}}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Marcas</label>
+                <select name="seller_brands" data-live-search="true" id="seller_brands" class="form-control" title="Seleciona uma marca">
+                    {%for row in marcas%}
+                    <option value="{{row.marcaprodutoseller}}">{{row.marcaprodutoseller}}</option>
+                    {%endfor%}
+                     </select>
+            </div>
+        </div>
+    </div>
+
+<div>
+    <center><h1>Comparador de Preços</h1></center>
+    
+</div> 
+
+<input class="form-control" id="myInput" type="text" placeholder="Pesquise aqui...">
+
+  <table id="data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Seller</th>
+        <th>GOOGLE</th>
+        <th>Pagina Anuncio</th>
+        <th>EAN</th>
+        <th>preco</th>
+        <th>ITEM</th>
+        <th>SKU</th>
+        <th>MARCA</th>
+        <th>PRECOHAUSZ</th>
+        <th>DIFERENCA</th>
+        <th>DATAATUALIZACAO</th>
+    
+      </tr>
+    </thead>
+    <tbody id="myTable">
+        {%for produto in produtos%}
+        <tr>
+          <td>{{produto['nomeseller']}}</td>
+          <td></td>
+          <td></td>
+          <td>{{produto['eanreferebcia']}}</td>
+          <td>{{produto['precoprodutoseller']}}</td>
+          <td>{{produto['nomeproduto']}}</td>
+          <td><a href="{{url_for('index.retorna_prices_sku', sku = produto['skuhausz'])}}">{{produto['skuhausz']}}</a></td>
+          <td>{{produto['marcaprodutoseller']}}</td>
+          <td>{{produto['precohausz']}}</td>
+          <td>{{produto['diferenciapreco']}}</td>
+          <td></td>
+          
+        </tr>
+        {%endfor%}
+        
+       
+    </tbody>
+  </table>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script>
+      $(document).ready(function(){
+      $("#myInput").on("keyup", function() {
+          var value = $(this).val().toLowerCase();
+          $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+          });
+      });
+      });
+      </script>
+
+<script>
+    $(document).ready(function () {
+        $("#name_seller").selectpicker();
+
+        $("#seller_brands").selectpicker();
+
+        function load_data(type, category_id) {
+            $.ajax({
+                url: "/sellers",
+                method: "POST",
+                data: { type: type, category_id: category_id },
+                dataType: "json",
+                success: function (data) { //alert(category_id)
+                    var html = "";
+                    for (var count = 0; count < data.length; count++) {
+                        html += '<option value="' + data[count].id + '">' + data[count].name + "</option>";
+                    }
+                    if (type == "carData") {
+                        $("#name_seller").html(html);
+                        $("#name_seller").selectpicker("refresh");
+                    } else {
+                        $("#seller_brands").html(html);
+                        $("#seller_brands").selectpicker("refresh");
+                    }
+                },
+            });
+        }
+
+        $(document).on("change", "#name_seller", function () {
+            var category_id = $("#name_seller").val();
+            load_data("carModeldata", category_id);
+        });
+    });
+</script>
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+  
+      <li class="page-item"><a href="{{page-1}}" class="btn btn-outline-dark">Anterior</a></th>
+      <th scope="row"><a href="{{page}}" class="btn btn-outline-dark">{{page}}</a></th>
+      <li class="page-item"><a href="{{page+1}}" class="btn btn-outline-dark">{{page+1}}</a></th>
+      <li class="page-item"><a href="{{page+2}}" class="btn btn-outline-dark">{{page+2}}</a></th>
+      <li class="page-item"><a href="{{page+3}}" class="btn btn-outline-dark">{{page+3}}</a></th>
+      <li class="page-item"><a href="{{page+4}}" class="btn btn-outline-dark">next</a></th>
+        </ul>
+      </nav>
+</body>
+
+
+{% endblock %}
