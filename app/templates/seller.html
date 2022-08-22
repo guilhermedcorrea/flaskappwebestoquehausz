@@ -1,0 +1,243 @@
+
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css" />
+    <link rel="stylesheet" href="{{url_for('static', filename='legend.css')}}"/>
+    <title>Tabela</title>
+</head>
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="/">Home</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+              <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="/admin">Admin <span class="sr-only">(current)</span></a>
+             
+          
+
+         
+              </div>
+            </div>
+       
+          </nav>
+    </header>
+    <div class="container">
+      
+        <div class="row">
+            <div class="col-md-6">
+                <label>Marca</label>
+                <select name="car_brand" data-live-search="true" id="car_brand" class="form-control" title="Marca"> 
+                    {% for brand in marcas %}
+                    <option value="{{brand['Marca']}}">{{brand['Marca']}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Seller</label>
+                <select name="car_models" data-live-search="true" id="car_models" class="form-control" title="Seller"> 
+                 {% for seller in sellers%}
+                  <option value="{{seller['Seller']}}">{{seller['Seller']}}</option>
+                  {%endfor%}
+                 
+                  
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Status</label>
+                <select name="status" data-live-search="true" id="statos" class="form-control" title="Status"> 
+                    {% for st in status%}
+                  <option value="{{st}}"></option>
+                  {%endfor%}
+                 
+                 
+                  
+                </select>
+            </div>
+        </div>
+    </div>
+
+        <div>
+            <center><h1>Tabela de Preços</h1></center>
+            
+        </div> 
+
+     
+            <input class="form-control" id="myInput" type="text" placeholder="Pesquise aqui...">
+            <table class="table table-bordered table-striped ">
+                <thead>
+                    <tr>
+                        <td scope="col">CanalDeVenda</td>
+                        <td scope="col">PaginaAnuncio</td>
+                        <td scope="col">PerfilGoogle</td>
+                        <td scope="col">NomeProduto</td>
+                        <td scope="col">Concorrente</td>
+                        <td scope="col">EanReferencia</td>
+                        <td scope="col">PrecoConcorrente</td>
+                        <td scope="col" >Marca</td>
+                        <td scope="col">SKUHausz</td>
+                        <td scope="col">PrecoHausz</td>
+						<td scope="col">DiferencaPreco</td>
+						
+                        
+                        <td scope="col">SaldoAtual</td>
+                        <td scope="col">NomeEstoque</td>
+                        <td scope="col">DataAtualizado</td>
+                       
+                    
+                  
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+				{% for produto in produtos%}
+
+                    <tr>
+                        
+                        <td data-tooltip="Disponivel">{{produto['seller']}}</td>
+                        <td scope="col"> <a class="navbar-brand" href="{{produto['paginaprodutoseller']}}"><img src="{{url_for('static', filename='seller.png')}}" height="40" width="40"></a></td>
+
+                        {%if produto['paginaprodutoseller'] == 'madeiramadeira'%}
+                       
+                            <td><a href="{{produto['paginaprodutoseller']}}"><img src="{{url_for('static', filename='madeira.png')}}" height="40" width="40"></a></td>
+                        {%else%}
+                            <td><a href="{{produto['paginaprodutogoogle']}}"><img src="{{url_for('static', filename='googleicone.png')}}" height="40" width="40"></a></td>
+                        {%endif%}
+						 <td >{{produto['nomeproduto']}}</td>
+						 <td data-tooltip="Disponivel">{{produto['nomeseller']}}</td>
+						  <td>{{produto['eanreferebcia']}}</td>
+						  <td>{{produto['precoprodutoseller']}}</td>
+                          <td data-tooltip="Disponivel">{{produto['marcaprodutoseller']}}</td>
+                          <td><a href="{{url_for('index.retorna_prices_sku', sku = produto['skuhausz'])}}">{{produto['skuhausz']}}</a></td>
+                          <td >{{produto['Preco']}}</td>
+                          {% if produto['diferenca'] <=0 %}
+                            <td class="text-danger" data-tooltip="Perdendo">{{produto['diferenca']}}</td>
+                        {%else%}
+                            <td class="text-success" data-tooltip="Ganhando">{{produto['diferenca']}}</td>
+                        {%endif%}
+                        <td data-tooltip="Disponivel">{{produto['SaldoAtual']}}</td>
+                        <td data-tooltip="Disponivel">{{produto['NomeEstoque']}}</td>
+                          <td data-tooltip="Disponivel">{{produto['DataAtualizado']}}</td>
+                         
+                  
+                        
+                    </tr>
+                    {%endfor%}
+               
+					
+                </tbody>
+            </table>
+       
+  
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function(){
+        $("#myInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+        });
+        </script>
+
+<script>
+    $(document).ready(function () {
+        $("#car_brand").selectpicker();
+
+        $("#car_models").selectpicker();
+
+        function load_data(type, category_id) {
+            $.ajax({
+                url: "/carbrand",
+                method: "POST",
+                data: { type: type, category_id: category_id },
+                dataType: "json",
+                success: function (data) { //alert(category_id)
+                    var html = "";
+                    for (var count = 0; count < data.length; count++) {
+                        html += '<option value="' + data[count].id + '">' + data[count].name + "</option>";
+                    }
+                    if (type == "carData") {
+                        $("#car_brand").html(html);
+                        $("#car_brand").selectpicker("refresh");
+
+
+                    } else {
+                        $("#car_models").html(html);
+                        $("#car_models").selectpicker("refresh");
+                        
+                    }
+                },
+            });
+        }
+
+        $(document).on("change", "#car_brand", function () {
+            var category_id = $("#car_brand").val();
+            load_data("carModeldata", category_id);
+        });
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#car_brand").selectpicker();
+
+        $("#car_models").selectpicker();
+
+        function load_data(type, category_id) {
+            $.ajax({
+                url: "/carbrand",
+                method: "POST",
+                data: { type: type, category_id: category_id },
+                dataType: "json",
+                success: function (data) { //alert(category_id)
+                    var html = "";
+                    for (var count = 0; count < data.length; count++) {
+                        html += '<option value="' + data[count].id + '">' + data[count].name + "</option>";
+                    }
+                    if (type == "carData") {
+                        $("#car_brand").html(html);
+                        $("#car_brand").selectpicker("refresh");
+                    } else {
+                        $("#car_models").html(html);
+                        $("#car_models").selectpicker("refresh");
+                    }
+                },
+            });
+        }
+
+        $(document).on("change", "#car_brand", function () {
+            var category_id = $("#car_brand").val();
+            load_data("carModeldata", category_id);
+        });
+    });
+</script>
+
+
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+  
+      <li class="page-item"><a href="{{page-1}}" class="btn btn-outline-dark">Anterior</a></th>
+      <th scope="row"><a href="{{page}}" class="btn btn-outline-dark">{{page}}</a></th>
+      <li class="page-item"><a href="{{page+1}}" class="btn btn-outline-dark">{{page+1}}</a></th>
+      <li class="page-item"><a href="{{page+2}}" class="btn btn-outline-dark">{{page+2}}</a></th>
+      <li class="page-item"><a href="{{page+3}}" class="btn btn-outline-dark">{{page+3}}</a></th>
+      <li class="page-item"><a href="{{page+4}}" class="btn btn-outline-dark">next</a></th>
+        </ul>
+      </nav>
+</body>

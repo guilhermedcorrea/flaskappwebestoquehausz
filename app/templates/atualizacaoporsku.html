@@ -1,0 +1,268 @@
+
+<head>
+    
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+  <title>{{skuproduto}}</title>
+</head>
+<body>
+
+  <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="/">Home</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+              <a class="nav-item nav-link active" href="/admin">Admin <span class="sr-only">(current)</span></a>
+           
+        
+
+       
+            </div>
+          </div>
+     
+        </nav>
+  </header>
+  
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+      <div class="container-fluid py-4">
+        <div class="row">
+          <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+              <div class="card-header p-3 pt-2">
+                <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
+                  <i class="material-icons opacity-10 uil uil-percentage"></i>
+                </div>
+                <div class="text-end pt-1">
+                  <p class="text-sm mb-0 text-capitalize">Ultima Atualização</p>
+                  <!-- Insira aqui a porcentagem da diferença em media dos itens da mercostore com os concorrentes -->
+                  
+                  <h4 class="mb-0"> {{resumoproduto[0][3]}}</h4>
+                </div>
+              </div>
+              <hr class="dark horizontal my-0">
+              <div class="card-footer p-3">
+                <!-- Insira dentro do span a diferença em porcentagem entre a media dessa semana e da semana passada -->
+                <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+55% </span>do que a semana passada</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="card">
+              <div class="card-header p-3 pt-2">
+                <div class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
+                  <i class="material-icons opacity-10 uil uil-percentage"></i>
+                </div>
+                <div class="text-end pt-1">
+                  <p class="text-sm mb-0 text-capitalize">Ultimo Prazo Cadastrado</p>
+                  <h4 class="mb-0">{{media_mais_barato}}</h4>
+                </div>
+              </div>
+              <hr class="dark horizontal my-0">
+              <div class="card-footer p-3">
+                <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+5% </span>do que a semana passada</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="card">
+              <div class="card-header p-3 pt-2">
+                <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                  <i class="material-icons opacity-10 uil uil-box"></i>
+                </div>
+                <div class="text-end pt-1">
+                  <p class="text-sm mb-0 text-capitalize">Ultimo Saldo Cadastrado</p>
+                  <!-- Insira aqui a quantidade de itens mais caros -->
+                  <h4 class="mb-0">{{resumoproduto[0][4]}}</h4>
+                </div>
+              </div>
+              <hr class="dark horizontal my-0">
+              <div class="card-footer p-3">
+                <!-- Insira a porcentagem dentro do span, que corresponde a diferença entre os itens mais baratos desse mes e do mes anterior -->
+                <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+3% </span>do que o mês passado</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="card">
+              <div class="card-header p-3 pt-2">
+                <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
+                  <i class="material-icons opacity-10 uil uil-box"></i>
+                </div>
+                <div class="text-end pt-1">
+                  <p class="text-sm mb-0 text-capitalize">Total Pedidos do SKU {{resumoproduto[0][1]}}</p>
+                  <!-- quantidade de itens mais baratos na tabela -->
+                  <h4 class="mb-0">0,00</h4>
+                  <p class="text-sm mb-0 text-capitalize">Saldo Atual </p>
+                  <!-- quantidade de itens mais baratos na tabela -->
+                  <h4 class="mb-0">{{resumoproduto[0][8]}} | {{detalhes[0]['NomeEstoque']}}</h4>
+                  <p class="text-sm mb-0 text-capitalize">Prazo Atual</p>
+                  <!-- quantidade de itens mais baratos na tabela -->
+                  <h4 class="mb-0">0,00</h4>
+               
+                </div>
+              </div>
+              <hr class="dark horizontal my-0">
+              <div class="card-footer p-3">
+                <!-- Insira a porcentagem dentro do span, que corresponde a diferença entre os itens mais baratos desse mes e do mes anterior -->
+                <p class="mb-0"><span class="text-danger text-sm font-weight-bolder">-2% </span> do que o mês passado</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+    
+  
+   
+      <div>
+          <center><h1>{{resumoproduto[0][11]}} |{{resumoproduto[0][1]}}</h1></center>
+          
+      </div> 
+
+   
+         
+          <table class="table table-bordered table-striped ">
+              <thead>
+                  <tr>
+                      <td scope="col">SKU</td>
+                      <td scope="col"> NomeProduto</td>
+                      <td scope="col">StatusAtivo</td>
+                      <td scope="col">PrazoCadastrado</td>
+                      <td scope="col">SaldoFisico</td>
+                      <td scope="col">Fornecedor</td>
+                      <td scope="col">LogsAlteração</td>
+                      <td scope="col">PreçoProduto</td>
+                      <td scope="col">PreçoPago</td>
+                   
+                     
+
+                  
+                
+                  </tr>
+              </thead>
+              <tbody id="myTable">
+      
+                  <tr>
+                      
+
+                      
+                     
+           <td>{{resumoproduto[0]['SKU']}}</td>
+           <td>{{resumoproduto[0]['NomeProduto']}}</td>
+            <td></td>
+            <td></td>
+            <td>{{resumoproduto[0]['SaldoAtual']}}</td>
+            <td>{{resumoproduto[0]['Quantidade']}}</td>
+            <td></td>
+            <td>{{resumoproduto[0]['Preco']}}</td>
+            <td></td>
+        
+                
+                 
+                      
+                  </tr>
+               
+             
+        
+              </tbody>
+          </table>
+     
+
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script>
+      $(document).ready(function(){
+      $("#myInput").on("keyup", function() {
+          var value = $(this).val().toLowerCase();
+          $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+          });
+      });
+      });
+      </script>
+
+<script>
+  $(document).ready(function () {
+      $("#car_brand").selectpicker();
+
+      $("#car_models").selectpicker();
+
+      function load_data(type, category_id) {
+          $.ajax({
+              url: "/carbrand",
+              method: "POST",
+              data: { type: type, category_id: category_id },
+              dataType: "json",
+              success: function (data) { //alert(category_id)
+                  var html = "";
+                  for (var count = 0; count < data.length; count++) {
+                      html += '<option value="' + data[count].id + '">' + data[count].name + "</option>";
+                  }
+                  if (type == "carData") {
+                      $("#car_brand").html(html);
+                      $("#car_brand").selectpicker("refresh");
+                  } else {
+                      $("#car_models").html(html);
+                      $("#car_models").selectpicker("refresh");
+                  }
+              },
+          });
+      }
+
+      $(document).on("change", "#car_brand", function () {
+          var category_id = $("#car_brand").val();
+          load_data("carModeldata", category_id);
+      });
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script>
+  $(document).ready(function () {
+      $("#car_brand").selectpicker();
+
+      $("#car_models").selectpicker();
+
+      function load_data(type, category_id) {
+          $.ajax({
+              url: "/carbrand",
+              method: "POST",
+              data: { type: type, category_id: category_id },
+              dataType: "json",
+              success: function (data) { //alert(category_id)
+                  var html = "";
+                  for (var count = 0; count < data.length; count++) {
+                      html += '<option value="' + data[count].id + '">' + data[count].name + "</option>";
+                  }
+                  if (type == "carData") {
+                      $("#car_brand").html(html);
+                      $("#car_brand").selectpicker("refresh");
+                  } else {
+                      $("#car_models").html(html);
+                      $("#car_models").selectpicker("refresh");
+                  }
+              },
+          });
+      }
+
+      $(document).on("change", "#car_brand", function () {
+          var category_id = $("#car_brand").val();
+          load_data("carModeldata", category_id);
+      });
+  });
+</script>
+
+<script>

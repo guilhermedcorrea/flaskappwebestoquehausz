@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+
+{% block conteudo %}
+    <h1>Disponibilidade Produto</h1>
+
+
+ <table class="table table-bordered table-responsive" id="myTable">
+  <div class="table-responsive" id="myDIV">
+    <table class="table table-striped mg-b-0">
+      <thead>
+        <tr>
+          <th>Marca</th>
+          <th>SKU</th>
+          <th>NomeProduto</th>
+          <th>SaldoAtual</th>
+          <th>NomeEstoque</th>
+          <th>PrioridadeEstoque</th>
+          <th>PrazoAdicional</th>
+          <th>PrazoFabricacao</th>
+          <th>DataAtualizado</th>
+          <th>DISPONIBILIDADE</th>
+
+
+        </tr>
+      </thead>
+      <tbody id="myTable">
+  <thead>
+    {% for produto in produtos %}
+
+    <tr>
+
+      <th scope="row">{{produto['Marca']}}</th>
+      <td>{{produto['SKU']}}</td>
+      <td>{{produto['NomeProduto']|truncate(35)}}</td>
+      <td>{{produto['SaldoAtual']}}</td>
+      <td>{{produto['NomeEstoque']}}</td>
+      <td>{{produto['PrioridadeEstoque']}}</td>
+      <td>{{produto['PrazoAdicional']}}</td>
+      <td>{{produto['PrazoFabricacao']}}</td>
+      <td>{{produto['DataAtualizado']}}</td>
+      <td>{{produto['DISPONIBILIDADE']}}</td>
+
+
+    </tr>
+
+    {%endfor%}
+  </thead>
+  <tbody>
+
+
+  </tbody>
+</table>
+
+  <nav aria-label="Page navigation example">
+  <ul class="pagination">
+
+    <li class="page-item"><a href="{{page-1}}" class="btn btn-outline-dark">Anterior</a></th>
+    <th scope="row"><a href="{{page}}" class="btn btn-outline-dark">{{page}}</a></th>
+    <li class="page-item"><a href="{{page+1}}" class="btn btn-outline-dark">{{page+1}}</a></th>
+    <li class="page-item"><a href="{{page+2}}" class="btn btn-outline-dark">{{page+2}}</a></th>
+    <li class="page-item"><a href="{{page+3}}" class="btn btn-outline-dark">{{page+3}}</a></th>
+    <li class="page-item"><a href="{{page+4}}" class="btn btn-outline-dark">next</a></th>
+      </ul>
+    </nav>
+    
+{% endblock conteudo %}
