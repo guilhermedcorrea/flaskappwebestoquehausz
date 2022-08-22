@@ -59,7 +59,6 @@ class DashAdmin:
         with db.engine.connect() as conn:
             exec = (text(""" 
                 SELECT pmarca.Marca ,COUNT(pbasico.[SKU]) AS 'QUANTIDADEPRODUTOS'
-
                 FROM [HauszMapa].[Produtos].[ProdutoBasico] AS pbasico
                 JOIN [HauszMapa].[Produtos].[Marca] as pmarca
                 ON pmarca.IdMarca = pbasico.IdMarca
@@ -91,7 +90,6 @@ class DashAdmin:
         lista_dicts = []
         query_atualizados = db.engine.execute("""
             SELECT pbasico.[SKU]
-
             FROM [HauszMapa].[Produtos].[ProdutoBasico] AS pbasico
             JOIN [HauszMapa].[Produtos].[Marca] as pmarca
             ON pmarca.IdMarca = pbasico.IdMarca
@@ -167,7 +165,6 @@ def retorna_monitoramento_precos(page):
             ORDER BY [dataatualizado] DESC
             OFFSET (@PageNumber-1)*@RowsOfPage ROWS
             FETCH NEXT @RowsOfPage ROWS ONLY
-
             """.format(page)))
         precossellers = conn.execute(exec).all()
         for estoques in precossellers:
@@ -187,7 +184,7 @@ def retorna_monitoramento_precos(page):
             }
 
             lista_produtos.append(items)
-            print(items)
+        
     return lista_produtos
 
 
@@ -256,7 +253,6 @@ def retorna_maior_preco(sku):
                 SELECT top(1)[nomeseller]  
                 ,MAX([precoprodutoseller])
                 FROM [HauszMapaDev2].[dbo].[SellersPrices]
-
                 WHERE skuhausz = '{}'
                 GROUP BY [nomeseller]
             """.format(sku)))
@@ -270,7 +266,6 @@ def retorna_menor_preco(sku):
                 SELECT [nomeseller]  
                 ,[precoprodutoseller]
                 FROM [HauszMapaDev2].[dbo].[SellersPrices]
-
                 WHERE skuhausz = '{}'
                 order by [precoprodutoseller] asc
             """.format(sku)))
@@ -290,22 +285,18 @@ def resumo_produto(sku):
                 WHEN basico.[bitLinha] = 1 THEN 'ForaDeLinha'
                 WHEN basico.[bitLinha] = 0 THEN 'EmLinha'
                 ELSE 'NAOAVALIADO'
-
             END 'STATUS',
             CASE
                 WHEN basico.[BitAtivo] = 1 THEN 'Ativo'
                 WHEN basico.[BitAtivo] = 0 THEN 'Inativo'
                 ELSE 'NAOAVALIADO'
-
             END 'BIT'
-
             FROM [HauszMapa].[Produtos].[ProdutoBasico]  as basico
             JOIN [HauszMapa].[Estoque].[Estoque] AS ESTOQ
             ON ESTOQ.IdEstoque = basico.EstoqueAtual
             JOIN [HauszMapa].[Produtos].[ProdutosSaldos] as psaldo
             ON psaldo.SKU = basico.SKU
             WHERE basico.[SKU] = '{}'
-
             ORDER BY  psaldo.DataAtualizado DESC
                 
         """.format(sku)))
@@ -346,5 +337,42 @@ def resumo_preco_info(sku):
             """.format(sku)))
         resumoproduto = conn.execute(exec).all()
         return resumoproduto
+
+def select_marcas():
+    lista_produtos = []
+    with db.engine.connect() as conn:
+
+        exec = (text(""" SELECT [IdMarca],[Marca]      
+            FROM [HauszMapa].[Produtos].[Marca]"""))
+        marcas_produtos = conn.execute(exec).all()
+        for marca in marcas_produtos:
+            dict_marca = {}
+            dict_marca['IdMarca'] = marca[0],
+            dict_marca['Marca'] = marca[1]
+            lista_produtos.append(dict_marca)
+
+        return lista_produtos
+
+
+def select_estoque():
+    lista_dicts = []
+    with db.engine.connect() as conn:
+        
+        exec = (text("""SELECT DISTINCT [EstoqueLocal], NomeEstoque
+            FROM [HauszMapa].[Produtos].[ProdutoBasico] as basico
+            JOIN  [HauszMapa].[Estoque].[Estoque] as estoq
+            ON estoq.IdEstoque = basico.EstoqueAtual"""))
+        categoria_produtos = conn.execute(exec).all()
+        for categoria in categoria_produtos:
+            dict_items = {}
+            dict_items['IdCategoria'] = categoria['EstoqueLocal'],
+            dict_items['NomeEstoque'] = categoria['NomeEstoque']
+            lista_dicts.append(dict_items)
+
+    return lista_dicts
+            
+
+                    
+        
 
 
