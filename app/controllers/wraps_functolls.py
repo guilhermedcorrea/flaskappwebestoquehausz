@@ -1,6 +1,8 @@
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
+from sqlalchemy import insert
+from ..models.hausz_mapa import LogAlteracoesEstoques
 
 db = SQLAlchemy()
 def configure(app):
@@ -16,10 +18,31 @@ def verify_group_users_hausz_mapa(f):
         return f(*args, **kwargs)
     return conditions_acess_users
 
+
 def create_log_operations(f):
+
     @wraps(f)
     def hausz_mapa_update_logs(*args, **kwargs):
-        print("criando logs CRIANDO LOGS -", kwargs)
+        print("insere LOG")
+       
+        '''
+        try:
+            with db.engine.begin() as conn:
+                result = conn.execute(
+                    insert(LogAlteracoesEstoques),
+
+                    [
+                        {"idusuario": "sandy", "idprodutoalterado": kwargs.get('')},
+                        {"idmarcaalterada": kwargs.get('brand'), "tipoalteracao": "Patrick Star",
+                        "valoranterior":"","valoralterado":kwargs.get(''),"dataalteracao":kwargs.get('dataatualizacao')}
+                    ]
+                )
+                conn.commit()  
+        except:
+            pass
+        '''
+
+       
         return f(*args, **kwargs)
     return hausz_mapa_update_logs
 
