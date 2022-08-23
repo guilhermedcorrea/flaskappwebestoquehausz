@@ -1,5 +1,6 @@
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 db = SQLAlchemy()
 def configure(app):
@@ -11,20 +12,33 @@ def verify_group_users_hausz_mapa(f):
     @wraps(f)
     def conditions_acess_users(*args, **kwargs):
         print('Calling decorated function',args, 'acesso usuario')
+
         return f(*args, **kwargs)
     return conditions_acess_users
 
 def create_log_operations(f):
     @wraps(f)
     def hausz_mapa_update_logs(*args, **kwargs):
-        print('Calling decorated function',args, 'update log hausz')
+        print("criando logs CRIANDO LOGS -", kwargs)
         return f(*args, **kwargs)
     return hausz_mapa_update_logs
 
+    
 def call_procedure_saldo(f):
     @wraps(f)
     def hausz_mapa_update_saldo(*args, **kwargs):
-        print('Calling decorated function', args,'call procedore saldos')
+        print('hausz_mapa_update_saldo',kwargs)
+        print("call procedure saldos- INSERINDO SALDOS NOS",kwargs)
+
+        try:
+            with db.engine.begin() as conn:
+                exec = (text(
+                    """EXEC Estoque.SP_AtualizaEstoqueFornecedor @Quantidade = {}, @CodigoProduto = '{}', @IdMarca = {}""".format(
+                        float(kwargs.get('sd')), str(kwargs.get('ref')), int(kwargs.get('brand')))))
+                exec_produtos = conn.execute(exec)
+                print("call procedure saldos- INSERINDO SALDOS NOS",kwargs)
+        except:
+            print('erro')
         return f(*args, **kwargs)
     return hausz_mapa_update_saldo
 
@@ -32,8 +46,20 @@ def call_procedure_saldo(f):
 def call_procedure_prazos(f):
     @wraps(f)
     def hausz_mapa_update_prazo(*args, **kwargs):
-        print('Calling decorated function', args,'call procedore prazoss')
-        return f(*args, **kwargs)
+        print(kwargs)
+   
+        print("call procedure prazos - hausz_mapa_update_prazo",kwargs)
+        try:
+            with db.engine.begin() as conn:
+                    exec = (text("""EXEC Estoque.SP_AtualizaPrazoProducao @Sku = '{}' ,@PrazoProducao = {}, @PrazoEstoqueFabrica """.format(
+                        str(kwargs.get('ref')),float(kwargs.get('pz')), int(kwargs.get('brand')))))
+
+                    exec_produtos = conn.execute(exec)
+                    print("call procedure prazos - hausz_mapa_update_prazo",kwargs)
+
+        except:
+            print('erro')
+       
     return hausz_mapa_update_prazo
 
 
