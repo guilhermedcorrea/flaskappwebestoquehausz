@@ -1,10 +1,11 @@
 import csv
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
-
+from datetime import datetime
 
 from ..controllers.wraps_functolls import (
-    verify_group_users_hausz_mapa, create_log_operations, create_log_operations, call_procedure_saldo, call_procedure_prazos)
+    verify_group_users_hausz_mapa, create_log_operations, create_log_operations
+    , call_procedure_saldo, call_procedure_prazos)
 
 
 db = SQLAlchemy()
@@ -38,14 +39,16 @@ def get_id_user(*args, **kwargs):
 @call_procedure_prazos
 def update_prazos_skus(*args, **kwargs):
     print(type(kwargs))
-    print("INSERINDO PRAZO", kwargs.get('ref'), kwargs('pz'), kwargs.get('brand'))
+    print("INSERINDO PRAZO", kwargs.get('ref'), kwargs('pz')
+    , kwargs.get('brand'), kwargs.get('dataatualizacao'))
 
 
 @create_log_operations
 @call_procedure_saldo
 def update_saldos_skus(*args, **kwargs):
     print(type(kwargs))
-    print("INSERINDO SALDOS", kwargs.get('ref'), kwargs.get('sd'),kwargs.get('brand'))
+    print("INSERINDO SALDOS", kwargs.get('ref'), kwargs.get('sd')
+        ,kwargs.get('brand'), kwargs.get('dataatualizacao'))
  
 
 def get_produtos(*args, **kwargs):
@@ -59,13 +62,13 @@ def get_produtos(*args, **kwargs):
       
         print(kwargs.get('ref'), kwargs.get('sd'), idmarca = idmarca)
 
-
 class ReaderCsv:
     def __init__(self, path):
         self.path = path
         self.dict_rows = {}
+        self.data = str(datetime.today().strftime('%Y-%m-%d %H:%M')).split()[0]
     def reader_csv(self, file):
-        with open(file, newline='') as csvfile:
+        with open(file, newline='', encoding='latin-1') as csvfile:
             reader = csv.DictReader(
                 csvfile, delimiter=";", skipinitialspace=True)
             for row in reader:
@@ -98,11 +101,14 @@ class ReaderCsv:
                        
                         except:
                             pass
+                        try:
+                            dataatual = self.data
+                        except:
+                            pass
                 
-                        #list(get_produtos(ref=sku, sd=saldo, brand=idmarca))
-                        list(update_saldos_skus(ref=sku, sd=saldo, brand=idmarca))
+                     
+                        list(update_saldos_skus(ref=sku, sd=saldo, brand=idmarca, dataatualizacao = dataatual))
                     
-
                     elif len(row['SALDO']) == 0 and len(row['PRAZO']) != 0:
                         sku = str(row['SKU'].strip())
                         try:
@@ -123,7 +129,13 @@ class ReaderCsv:
                         except:
                             pass
 
-                        list(update_prazos_skus(ref=sku, pz=prazo, brand=idmarca))
+                        try:
+                            dataatual = self.data
+                        except:
+                            pass
+
+
+                        list(update_prazos_skus(ref=sku, vl=prazo, brand=idmarca, dataatualizacao = dataatual))
                         
 
                     elif len(row['PRAZO']) != 0 and len(row['SALDO']) != 0:
@@ -144,8 +156,13 @@ class ReaderCsv:
                             idmarca = int(row['IDMARCA'])
                         except:
                             pass
+
+                        try:
+                            dataatual = self.data
+                        except:
+                            pass
                        
-                        list(update_prazos_skus(ref=sku, pz=prazo, brand=row['IDMARCA']))
+                        list(update_prazos_skus(ref=sku, pz=prazo, brand=row['IDMARCA'], dataatualizacao = dataatual))
                     else:
                         print('erro')
                         idmarca = int(row['IDMARCA'])
