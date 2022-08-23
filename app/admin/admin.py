@@ -138,6 +138,15 @@ class UploadfilesView(BaseView):
                 dicts = Produto(valor)
                 dicts_products = dicts.retorna_marca()
 
+            elif '.xlsx' in filename:
+                files = uploaded_file.save(os.path.join(current_app.config["UPLOAD_FOLDER"],'pdf', filename))
+                
+                valor = str(os.path.join(current_app.config["UPLOAD_FOLDER"],'pdf', filename))
+                #print('arquivo Marca', file)
+                dicts = Produto(valor)
+                dicts_products = dicts.retorna_marca()
+
+
             return '', 204
        
             #print('aqui salvo',os.path.join(current_app.config['UPLOAD_PATH'], filename))
@@ -158,7 +167,7 @@ class UploadfilesView(BaseView):
 
     @expose("/modelosaldo", methods=['GET', 'POST'])
     def export_modelo_alteracao_saldo(self):
-        return excel.make_response_from_array([['SKU', 'MARCA', 'SALDO', 'PRAZO']], "xlsx", file_name="exportmodelosaldo.xlsx")
+        return excel.make_response_from_array([['SKU', 'MARCA', 'SALDO', 'PRAZO']], "csv", file_name="exportmodelosaldo.csv")
 
 
 admin.add_view(UploadfilesView(name='Uploadfiles', endpoint='uploads'))
