@@ -7,6 +7,7 @@ from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert
 from ..models.hausz_mapa import LogAlteracoesEstoques
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -35,6 +36,7 @@ def call_procedure_saldo_hausz_mapa(f):
             return f(*args, **kwargs)
     return wrapper
 
+
 '''
 
 
@@ -46,6 +48,7 @@ def call_procedure_saldo_hausz_mapa(f):
                 }
 
 '''
+
 
 def call_procedure_prazo_hausz_mapa(f):
     @wraps(f)
@@ -180,6 +183,8 @@ class ReaderExcel:
     def __init__(self, file):
         self.file = file
         self.listas = []
+        self.dataatual = str(datetime.today().strftime(
+            '%Y-%m-%d %H:%M')).split()[0]
 
     def reader_csv(self, file):
         with open(file, newline='', encoding='latin-1') as csvfile:
@@ -245,7 +250,7 @@ class ReaderExcel:
             self.grouped[item['SKU']].append(item)
         lista_saldos = []
         for key, group in self.grouped.items():
-         
+
             get_prazos(group)
 
             lista_saldos = []
@@ -255,7 +260,7 @@ class ReaderExcel:
                 for valores in produtos_valores:
 
                     lista_saldos.append(valores['SALDO'])
-                
+
             saldop = float(sum(lista_saldos))
             produtosomado = {}
             try:
@@ -271,15 +276,19 @@ class ReaderExcel:
             except:
                 produtosomado['idmarca'] = 'notfound'
             try:
-                produtosomado['idproduto'] =  valores['IDPRODUTO']
+                produtosomado['idproduto'] = valores['IDPRODUTO']
             except:
                 produtosomado['idproduto'] = 'notfound'
             try:
-                produtosomado['saldoanterior'] =  valores['SALDOANTERIOR']
+                produtosomado['saldoanterior'] = valores['SALDOANTERIOR']
             except:
                 produtosomado['saldoanterior'] = float(0)
 
-   
-              
+            try:
+                produtosomado['dataatual'] = self.dataatual
+            except:
+                produtosomado['dataatual'] = 'notfound'
+
+
             update_saldo_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'], idmarca=produtosomado['idmarca'],
-                                  idproduto=produtosomado['idproduto'], saldoanterior=produtosomado['saldoanterior'])
+                                  idproduto=produtosomado['idproduto'], saldoanterior=produtosomado['saldoanterior'], data=produtosomado['dataatual'] )
