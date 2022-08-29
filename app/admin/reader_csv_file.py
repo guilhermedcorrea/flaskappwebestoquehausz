@@ -9,6 +9,9 @@ from sqlalchemy import insert
 from ..models.hausz_mapa import LogAlteracoesEstoques
 from datetime import datetime
 
+
+from ..models.hausz_mapa import LogEstoqueFornecedor
+
 db = SQLAlchemy()
 
 
@@ -37,19 +40,6 @@ def call_procedure_saldo_hausz_mapa(f):
     return wrapper
 
 
-'''
-
-
-      'sku': produtos_valores['SKU'],
-                    'saldo': somasaldo,
-                    'idmarca': produtos_valores['IDMARCA'],
-                    'idproduto': produtos_valores['IDPRODUTO'],
-                    'saldoanterior': produtos_valores['SALDOANTERIOR']
-                }
-
-'''
-
-
 def call_procedure_prazo_hausz_mapa(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -68,59 +58,54 @@ def call_procedure_prazo_hausz_mapa(f):
     return wrapper
 
 
-def create_log_udapte_products(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        print(kwargs)
-        '''
-        try:
-            with db.engine.begin() as conn:
-                result = conn.execute(
-                    insert(LogAlteracoesEstoques),
-                    [
-                        {"idusuario": 1, "idprodutoalterado": kwargs.get('idproduto')},
-                        {"idmarcaalterada": kwargs.get('idmarca'), "tipoalteracao": 1,
-                        "valoranterior":kwargs.get('saldoanterior'),"valoralterado":kwargs.get('saldo'),"dataalteracao":"2022-08-25", }
-                    ]
-                )
-                conn.commit()  
-        except:
-            pass
-        '''
+def insert_log_produto(*args, **kwargs):
+   
+    with db.engine.begin() as conn:
 
-        return f(*args, **kwargs)
-    return wrapper
-
-
-@create_log_udapte_products
-def get_updates_produtos(*args, **kwargs):
-
-    print('testeeeeeeeeee', kwargs)
-    try:
-        with db.engine.begin() as conn:
-            result = conn.execute(
-                insert(LogAlteracoesEstoques),
-                [
-                    {"idusuario": 1, "idprodutoalterado": kwargs.get(
-                        'idproduto')},
-                    {"idmarcaalterada": kwargs.get('idmarca'), "tipoalteracao": 1,
-                        "valoranterior": kwargs.get('saldoanterior'), "valoralterado": kwargs.get('saldo'), "dataalteracao": "2022-08-25", }
-                ]
+        stmt = (
+            insert(LogEstoqueFornecedor).
+            values(IdUsuario=1,SKU=kwargs.get('SKU'), IdMarca=kwargs.get('IDMARCA'),IdTipo=12
+            ,ValorAnterio=kwargs.get('QUANTIDADE')
+            ,ValorAlterado=kwargs['saldo'],PrazoProducaoAnterior=kwargs.get('PRAZOANTERIOR')
+            ,PrazoProducaoAlterado=kwargs.get('PRAZOANTERIOR'),DataAlteracao= kwargs.get('DATAATUALIZADO'))
             )
-            conn.commit()
-
-    except:
-        pass
-
-    print('criando log produtos', kwargs)
+        exec_produtos = conn.execute(stmt)
 
 
+def select_produtos(*args, **kwargs):
+    print('aquiiiiiiii',kwargs)
+    with db.engine.begin() as conn:
+        query_produto = (text("""
+            SELECT TOP(1) psaldo.Quantidade,pbasico.IdProduto
+            ,CONVERT(VARCHAR, psaldo.DataAtualizado, 23) as datas
+            ,pprazof.PrazoOperacional,pmarca.Marca,pbasico.[IdProduto]
+            ,pbasico.[SKU],pbasico.[NomeProduto]
+            ,pbasico.[EstoqueAtual],pbasico.[SaldoAtual] ,pbasico.[IdMarca]
+            FROM [HauszMapa].[Produtos].[ProdutoBasico] AS pbasico
+            JOIN [HauszMapa].[Produtos].[Marca] AS pmarca
+            ON pmarca.IdMarca = pbasico.IdMarca
+            JOIN  [HauszMapa].[Produtos].[ProdutoPrazoProducFornec] as pprazof
+            ON pprazof.SKU = pbasico.SKU
+            JOIN [HauszMapa].[Produtos].[ProdutosSaldos] AS psaldo
+            ON psaldo.SKU = pbasico.SKU
+            WHERE pbasico.SKU = '{}'""".format(kwargs['sku'])))
+
+        execquery = conn.execute(query_produto).all()
+        for exc in execquery:
+          
+            print('logs',exc['SKU'],kwargs['saldo'],'anterior ~ >', exc['Quantidade'],exc['PrazoOperacional'])
+            data = str(datetime.today().strftime('%Y-%m-%d %H:%M'))
+
+
+            insert_log_produto(SKU = exc['SKU'],IDPRODUTO = int(exc['IdProduto']),QUANTIDADE = float(exc['Quantidade']),DATAATUALIZADO = data    
+            ,PRAZOANTERIOR = int(exc['PrazoOperacional']) ,MARCA = str(exc['Marca']),IDMARCA = exc['IdMarca'], saldo = kwargs['saldo'])
+            
+            
 @call_procedure_saldo_hausz_mapa
 def update_saldo_produtos(*args, **kwargs):
     """Recebe parametros de  entrada"""
     print("update saldo", kwargs)
-    get_updates_produtos(kwargs.get('saldo'), kwargs.get('idmarca'), kwargs.get(
-        'idproduto'), kwargs.get('idmarca'), kwargs.get('saldoanterior'))
+ 
 
     print('update saldo hausz produtos',
           kwargs['sku'], kwargs['saldo'], kwargs['idmarca'])
@@ -140,11 +125,10 @@ def get_prazos(*args, **kwargs):
         if len(item.get('PRAZO')) > 0:
             prazo = int(item.get('PRAZO'))
 
-            get_updates_produtos(sku=item.get('SKU'), prazo=prazo, idmarca=item.get(
-                'IDMARCA'), idproduto=item.get('IDPRODUTO'), prazoanterior=item.get('PRAZOANTERIOR'))
+      
             prazolog = float(item.get('PRAZO'))
             update_prazo_produtos(sku=item.get(
-                'SKU'), prazo=prazolog, idmarca=item.get('IDMARCA'))
+                'SKU'),)
 
 
 def retorna_valores(ref):
@@ -242,6 +226,7 @@ class ReaderExcel:
 
                     self.listas.append(dict_produtos)
 
+
     def group_by(self, key):
         def key(key): return key['SKU']
 
@@ -290,5 +275,8 @@ class ReaderExcel:
                 produtosomado['dataatual'] = 'notfound'
 
 
-            update_saldo_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'], idmarca=produtosomado['idmarca'],
-                                  idproduto=produtosomado['idproduto'], saldoanterior=produtosomado['saldoanterior'], data=produtosomado['dataatual'] )
+
+            update_saldo_produtos(saldo=produtosomado['saldo'], sku=produtosomado['sku'], idmarca=produtosomado['idmarca'])
+            #         select_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'])
+
+            select_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'])
