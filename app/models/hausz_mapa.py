@@ -29,6 +29,8 @@ class ProdutosSaldos(db.Model):
 
 class SellersPrices(db.Model):
     _tablename_ = "SellersPrices"
+    __bind_key__ = 'HauszMapaDev2'
+    __table_args__ = {"schema": "dbo"}
     IdSeller = db.Column(db.Integer, primary_key=True)
     paginaprodutoseller = db.Column(db.String, unique=False, nullable=False)
     paginaprodutogoogle = db.Column(db.String, unique=False, nullable=False)
@@ -248,6 +250,7 @@ class ProdutoMarca:
 class DeparaProdutos(db.Model):
     __tablename__ = 'DeparaProdutos'
     __bind_key__ = 'HauszMapaDev2'
+    __table_args__ = {"schema": "dbo"}
     iddepara = db.Column(db.Integer, primary_key=True)
     IdProduto = db.Column(db.Integer)
     ean = db.Column(db.String(20))
@@ -265,6 +268,7 @@ class DeparaProdutos(db.Model):
 class ColetadosDiario(db.Model):
     __tablename__ = 'ColetadosDiario'
     __bind_key__ = 'HauszMapaDev2'
+    __table_args__ = {"schema": "dbo"}
     idcoletado = db.Column(db.Integer, primary_key=True)
     referenciahausz = db.Column(db.String(200), unique=False, nullable=False)
     referenciafabricante = db.Column(db.String(200), unique=False, nullable=False)
@@ -278,7 +282,8 @@ class ColetadosDiario(db.Model):
 
 
 class ArquivosConvertidos(db.Model):
-    _tablename_='ArquivosConvertidos'
+    __tablename__ ='ArquivosConvertidos'
+    __bind_key__ = 'HauszMapaDev2'
     __table_args__ = {"schema": "dbo"}
     idarquivo = db.Column(db.Integer, primary_key=True)
     SKU = db.Column(db.String(200), unique=False, nullable=True)
@@ -287,10 +292,25 @@ class ArquivosConvertidos(db.Model):
     dataatualizado = db.Column(db.DateTime, unique=False, nullable=True)
     marca = db.Column(db.String(200), unique=False, nullable=True)
 
+class LogEstoqueFornecedor(db.Model):
+    __tablename__="LogEstoqueFornecedor"
+    __table_args__ = {"schema": "Produtos"}
+    IdLogEstoqueFornec = db.Column(db.Integer, primary_key=True)
+    IdUsuario = db.Column(db.Integer)
+    SKU = db.Column(db.String, unique=False, nullable=False)
+    IdMarca = db.Column(db.Integer,unique=False, nullable=False)
+    IdTipo  = db.Column(db.Integer,unique=False, nullable=False)
+    ValorAnterio = db.Column(db.Float,unique=False, nullable=False)
+    ValorAlterado = db.Column(db.Float,unique=False, nullable=False)
+    PrazoProducaoAnterior = db.Column(db.Integer,unique=False, nullable=False)
+    PrazoProducaoAlterado = db.Column(db.Integer,unique=False, nullable=False)
+    DataAlteracao = db.Column(db.DateTime, unique=False, nullable=False)
+
 
 class LogAlteracoesEstoques(db.Model):
-    _tablename_="LogAlteracoesEstoques"
+    __tablename__ ="LogAlteracoesEstoques"
     __bind_key__ = 'HauszMapaDev2'
+    __table_args__ = {"schema": "dbo"}
     idlog = db.Column(db.Integer, primary_key=True)
     idusuario = db.Column(db.Integer)
     idprodutoalterado = db.Column(db.Integer)
@@ -303,6 +323,7 @@ class LogAlteracoesEstoques(db.Model):
 class TipoAlteracao(db.Model):
     _tablename_="TipoAlteracao"
     __bind_key__ = 'HauszMapaDev2'
+    __table_args__ = {"schema": "dbo"}
     idtipo = db.Column(db.Integer, primary_key=True)
     alteracao = db.Column(db.String(200))
     bitativo = db.Column(db.Boolean, unique=False, nullable=True)
