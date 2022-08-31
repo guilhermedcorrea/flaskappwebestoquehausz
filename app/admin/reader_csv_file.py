@@ -2,14 +2,12 @@ import csv
 from itertools import groupby, chain
 import collections
 from functools import wraps
-
+import re
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert
 from ..models.hausz_mapa import LogAlteracoesEstoques
 from datetime import datetime
-
-
 from ..models.hausz_mapa import LogEstoqueFornecedor
 
 db = SQLAlchemy()
@@ -22,8 +20,9 @@ def configure(app):
 
 def call_procedure_saldo_hausz_mapa(f):
     @wraps(f)
-    def wrapper(*args, **kwargs):
-
+    def update_saldo(*args, **kwargs):
+        print('saldoooo Calling decorated function',kwargs.get('sku'), kwargs.get('saldo'))
+       
         try:
             print('Calling procedure update SALDO', kwargs)
             with db.engine.begin() as conn:
@@ -36,13 +35,34 @@ def call_procedure_saldo_hausz_mapa(f):
 
         except:
             print('erro')
-            return f(*args, **kwargs)
-    return wrapper
+        
+ 
+        return f(*args, **kwargs)
+    return update_saldo
+
+
+@call_procedure_saldo_hausz_mapa
+def insert_log_produtos_saldos(*args, **kwargs):
+    data = str(datetime.today().strftime('%Y-%m-%d %H:%M'))
+    """Recebe parametros de entrada e cadastra log saldo"""
+    print('log saldo',kwargs,kwargs.get('sku'), kwargs.get('saldo'))
+    with db.engine.begin() as conn:
+        
+        stmt = (
+            insert(LogEstoqueFornecedor).
+            values(IdUsuario=1,SKU=kwargs.get('sku'), IdMarca=kwargs.get('IdMarca'),IdTipo=12,
+            PrazoProducaoAlterado=kwargs.get('prazo'),ValorAnterio = kwargs.get('saldoanterior')
+            ,PrazoProducaoAnterior=kwargs.get('prazoanterior'),DataAlteracao= data)
+            )
+        exec_produtos = conn.execute(stmt)
 
 
 def call_procedure_prazo_hausz_mapa(f):
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def update_prazo(*args, **kwargs):
+        
+        print('prazo Calling decorated function', kwargs.get('sku'), kwargs.get('prazo'))
+
         print('Calling procedure update PRAZO', kwargs)
         try:
             with db.engine.begin() as conn:
@@ -55,25 +75,31 @@ def call_procedure_prazo_hausz_mapa(f):
         except:
             print("erro prazo")
             return f(*args, **kwargs)
-    return wrapper
+ 
+    return update_prazo
 
+@call_procedure_prazo_hausz_mapa
+def insert_log_produtos_prazos(*args, **kwargs):
+    data = str(datetime.today().strftime('%Y-%m-%d %H:%M'))
+    """Recebe parametros de entrada e cadastra log prazo"""
+    print('log prazoproduto',kwargs.get('sku'), kwargs.get('prazo'))
 
-def insert_log_produto(*args, **kwargs):
-   
     with db.engine.begin() as conn:
 
         stmt = (
             insert(LogEstoqueFornecedor).
-            values(IdUsuario=1,SKU=kwargs.get('SKU'), IdMarca=kwargs.get('IDMARCA'),IdTipo=12
-            ,ValorAnterio=kwargs.get('QUANTIDADE')
-            ,ValorAlterado=kwargs['saldo'],PrazoProducaoAnterior=kwargs.get('PRAZOANTERIOR')
-            ,PrazoProducaoAlterado=kwargs.get('PRAZOANTERIOR'),DataAlteracao= kwargs.get('DATAATUALIZADO'))
+            values(IdUsuario=1,SKU=kwargs.get('sku'), IdMarca=kwargs.get('IdMarca'),IdTipo=12,
+            PrazoProducaoAlterado=kwargs.get('prazo'),ValorAnterio=kwargs.get('saldo')
+            ,PrazoProducaoAnterior=kwargs.get('prazoanterior'),DataAlteracao= data)
             )
         exec_produtos = conn.execute(stmt)
+    
+
+def key_func(k):
+	return k['SKU']
 
 
-def select_produtos(*args, **kwargs):
-    print('aquiiiiiiii',kwargs)
+def select_produtos_hausz_mapa(*args, **kwargs):
     with db.engine.begin() as conn:
         query_produto = (text("""
             SELECT TOP(1) psaldo.Quantidade,pbasico.IdProduto
@@ -88,195 +114,96 @@ def select_produtos(*args, **kwargs):
             ON pprazof.SKU = pbasico.SKU
             JOIN [HauszMapa].[Produtos].[ProdutosSaldos] AS psaldo
             ON psaldo.SKU = pbasico.SKU
-            WHERE pbasico.SKU = '{}'""".format(kwargs['sku'])))
+            WHERE pbasico.SKU = '{}'""".format(kwargs['SKU'])))
 
         execquery = conn.execute(query_produto).all()
-        for exc in execquery:
-          
-            print('logs',exc['SKU'],kwargs['saldo'],'anterior ~ >', exc['Quantidade'],exc['PrazoOperacional'])
-            data = str(datetime.today().strftime('%Y-%m-%d %H:%M'))
+        try:
+            for produtos in execquery:
+                produtos_dict = {
+                    'SKU':produtos['SKU'],
+                    'SALDOANTERIOR':produtos['Quantidade'],
+                    'PRAZOANTERIOR':produtos['PrazoOperacional'],
+                    'IDMARCA':produtos['IdMarca'],
+                    'IDPRODUTO':produtos['IdProduto']}
+
+            yield produtos_dict
+        except:
+            print("erro query")
 
 
-            insert_log_produto(SKU = exc['SKU'],IDPRODUTO = int(exc['IdProduto']),QUANTIDADE = float(exc['Quantidade']),DATAATUALIZADO = data    
-            ,PRAZOANTERIOR = int(exc['PrazoOperacional']) ,MARCA = str(exc['Marca']),IDMARCA = exc['IdMarca'], saldo = kwargs['saldo'])
-            
-            
-@call_procedure_saldo_hausz_mapa
-def update_saldo_produtos(*args, **kwargs):
-    """Recebe parametros de  entrada"""
-    print("update saldo", kwargs)
- 
-
-    print('update saldo hausz produtos',
-          kwargs['sku'], kwargs['saldo'], kwargs['idmarca'])
-
-
-@call_procedure_prazo_hausz_mapa
-def update_prazo_produtos(*args, **kwargs):
-    print('procedure prazo', kwargs)
-
-    print("call procedure prazos - hausz_mapa_update_prazo", kwargs)
-
-
-def get_prazos(*args, **kwargs):
-    items = list(chain.from_iterable(args))
-    for item in items:
-
-        if len(item.get('PRAZO')) > 0:
-            prazo = int(item.get('PRAZO'))
-
-      
-            prazolog = float(item.get('PRAZO'))
-            update_prazo_produtos(sku=item.get(
-                'SKU'),)
-
-
-def retorna_valores(ref):
-    # teste retorno Marca
-
-    with db.engine.begin() as conn:
-        exec = (text("""
-            SELECT pfornecedor.PrazoProducao,brand.Marca
-            ,basico.[IdProduto],basico.[SKU],basico.[IdMarca]  
-            ,basico.[SaldoAtual]   
-            FROM [HauszMapa].[Produtos].[ProdutoBasico] as basico
-            JOIN [HauszMapa].[Produtos].[Marca] as brand
-            ON brand.IdMarca = basico.IdMarca
-            JOIN [HauszMapa].[Produtos].[ProdutoPrazoProducFornec] as pfornecedor
-            ON pfornecedor.SKU = basico.[SKU]
-            WHERE basico.[SKU] = '{}' AND basico.[EstoqueAtual] = 3 """.format(ref)))
-
-        exec_produto = conn.execute(exec).all()
-        for produto in exec_produto:
-            try:
-                dict_items = {
-                    "sku": produto['SKU'],
-                    "idmarca": produto['IdMarca'],
-                    "idproduto": produto['IdProduto'],
-                    "saldo": produto['SaldoAtual'],
-                    "prazo": produto['PrazoProducao']
-                }
-                yield dict_items
-            except:
-                print("error")
-
-
-class ReaderExcel:
-    grouped = collections.defaultdict(list)
-
-    def __init__(self, file):
-        self.file = file
-        self.listas = []
-        self.dataatual = str(datetime.today().strftime(
-            '%Y-%m-%d %H:%M')).split()[0]
-
-    def reader_csv(self, file):
-        with open(file, newline='', encoding='latin-1') as csvfile:
+def reader_csv(file):
+    print("arquivooo", file)
+   
+    with open(file, newline='', encoding='latin-1') as csvfile:
+        try:
             reader = csv.DictReader(
                 csvfile, delimiter=";", skipinitialspace=True)
-            for rows in reader:
-                items = {}
-                sku_produto = str(rows['SKU'].strip())
-                dicts = list(retorna_valores(rows['SKU']))
 
-                if next(filter(lambda x: x['sku'] == sku_produto, dicts), None):
-                    lista_produto = dicts[0]
-
-                    dict_produtos = {}
-                    try:
-
-                        dict_produtos['SKU'] = lista_produto['sku']
-                    except:
-                        pass
-
-                    try:
-                        saldo_produto = str(rows['SALDO']).replace(
-                            ".", "").replace(",", ".")
-                        num = float(saldo_produto)
-                        dict_produtos['SALDO'] = num
-
-                    except:
-                        pass
-
-                    try:
-                        dict_produtos['PRAZO'] = rows['PRAZO']
-
-                    except:
-                        pass
-
-                    try:
-                        dict_produtos['PRAZOANTERIOR'] = lista_produto['prazo']
-                    except:
-                        pass
-
-                    try:
-                        dict_produtos['SALDOANTERIOR'] = lista_produto['prazo']
-                    except:
-                        pass
-
-                    try:
-                        dict_produtos['IDPRODUTO'] = lista_produto['idproduto']
-                    except:
-                        pass
-
-                    try:
-                        dict_produtos['IDMARCA'] = lista_produto['idmarca']
-                    except:
-                        pass
-
-                    self.listas.append(dict_produtos)
-
-
-    def group_by(self, key):
-        def key(key): return key['SKU']
-
-    def get_produtos(self):
-        for item in self.listas:
-            self.grouped[item['SKU']].append(item)
-        lista_saldos = []
-        for key, group in self.grouped.items():
-
-            get_prazos(group)
-
+            rows = [row for row in reader]
+        except:
+            print("erro file")
+        
+        produtos = sorted(rows, key=key_func)
+        for key, value in groupby(produtos, key_func):
             lista_saldos = []
-            valores = list(chain(group))
-            produtos_valores = valores
-            if next(filter(lambda x: 'SKU' in x, produtos_valores), None):
-                for valores in produtos_valores:
+            saldos = list(filter(lambda item: item['SALDO'],value))
+            for saldo in saldos:
+                values = list(select_produtos_hausz_mapa(SKU = str(saldo.get('SKU')).strip()))
+                values = values[0]
+                #print('RETORNO CONSULTA',values['SKU'], values['SALDOANTERIOR'], values['PRAZOANTERIOR'], values['IDMARCA'], values['IDPRODUTO'])
+                lista_saldos.append(float(str(saldo.get('SALDO').replace(".","").replace(",",".").strip())))
+                print(values)
 
-                    lista_saldos.append(valores['SALDO'])
-
-            saldop = float(sum(lista_saldos))
-            produtosomado = {}
+            produtos_dicts = {}
             try:
-                produtosomado['sku'] = valores['SKU']
+                produtos_dicts['SKU'] = str(saldo.get('SKU')).strip()
             except:
-                produtosomado['sku'] = 'NotFound'
-            try:
-                produtosomado['saldo'] = saldop
-            except:
-                produtosomado['saldo'] = float(0)
-            try:
-                produtosomado['idmarca'] = valores['IDMARCA']
-            except:
-                produtosomado['idmarca'] = 'notfound'
-            try:
-                produtosomado['idproduto'] = valores['IDPRODUTO']
-            except:
-                produtosomado['idproduto'] = 'notfound'
-            try:
-                produtosomado['saldoanterior'] = valores['SALDOANTERIOR']
-            except:
-                produtosomado['saldoanterior'] = float(0)
+                produtos_dicts['SKU'] = 'SKU NAO ENCONTRADO'
+                print('erro sku', saldo['SKU'])
 
             try:
-                produtosomado['dataatual'] = self.dataatual
+                produtos_dicts['PRAZO'] = int(saldo.get('PRAZO'))
             except:
-                produtosomado['dataatual'] = 'notfound'
+                produtos_dicts['PRAZO'] = int(0)
+                print("erro prazo", saldo['SKU'], 'prazo invalido')
+            try:
+                produtos_dicts['SALDO'] = sum(lista_saldos)
+            except:
+                produtos_dicts['SALDO'] = 'SALDO NAO ENCONTRADO'
+                print('erro saldo', saldo['SKU'],'SALDO INVALIDO')
+            try:
+                produtos_dicts['SALDOANTERIOR'] = float(values['SALDOANTERIOR'])
+            except:
+                print("erro saldo anterior")
+            try:
+                produtos_dicts['PRAZOANTERIOR'] = int(values['PRAZOANTERIOR'])
+            except:
+                print("erro prazoanterior")
 
+            try:
+                produtos_dicts['IDMARCA'] = values['IDMARCA']
+            except:
+                print("erro idmarca")
 
-
-            update_saldo_produtos(saldo=produtosomado['saldo'], sku=produtosomado['sku'], idmarca=produtosomado['idmarca'])
-            #         select_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'])
-
-            select_produtos(sku=produtosomado['sku'], saldo=produtosomado['saldo'])
+            try:
+                produtos_dicts['IDPRODUTO'] = values['IDPRODUTO']
+            except:
+                print("erro id produto")
+         
+            if re.search('\d+',str(produtos_dicts['PRAZO'])):
+                
+                try:
+                    insert_log_produtos_prazos(sku= produtos_dicts['SKU'], prazo = produtos_dicts['PRAZO']
+                        , prazoanterior = produtos_dicts['PRAZOANTERIOR']
+                            ,idmarca = produtos_dicts['IDMARCA'], idproduto = produtos_dicts['IDPRODUTO'])
+                except:
+                    print("erro log prazo")
+            try:
+                insert_log_produtos_saldos(sku= produtos_dicts['SKU'],
+                     saldo=produtos_dicts['SALDO'], saldoanterior = produtos_dicts['SALDOANTERIOR']
+                        , idmarca = produtos_dicts['IDMARCA'], idproduto = produtos_dicts['IDPRODUTO'])
+            except:
+                print("erro log saldo")
+         
+         
+           
