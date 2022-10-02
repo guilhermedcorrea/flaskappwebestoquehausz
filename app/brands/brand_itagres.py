@@ -84,8 +84,3 @@ class Itagres:
         except:
             pass
         
-
-     
-itagres = Itagres()
-#itagres.converter_imgpdf()
-itagres.reader_imagem()

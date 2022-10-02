@@ -102,13 +102,3 @@ class Viscardi:
             SALDO.append(dict(c, sku=sku))
         print(SALDO)
 
-
-
-viscardi = Viscardi()
-viscardi.converter_imgpdf()
-viscardi.reader_imagem()
-viscardi.group_by()
-
-
-
-

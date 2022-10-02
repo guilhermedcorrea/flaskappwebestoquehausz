@@ -106,10 +106,3 @@ class Elizabeth:
         return SALDO
         
        
-      
-elizabeth = Elizabeth()
-elizabeth.converter_imgpdf()
-elizabeth.reader_imagem()
-dicts = elizabeth.group_by()
-print(dicts)
-

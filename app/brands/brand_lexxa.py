@@ -85,10 +85,3 @@ class Lexxa:
    
        
 
-viscardi = Lexxa()
-viscardi.reader_imagem()
-
-
-
-
-
